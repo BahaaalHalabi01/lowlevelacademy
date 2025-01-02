@@ -1,10 +1,10 @@
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #define MAX_IDS 32
 #define MAX_EMPLOYEES 1000
 
-struct employee_t {
+struct __attribute__((__packed__)) employee_t {
   int id;
   char firstname[64];
   char lastname[64];
@@ -12,11 +12,10 @@ struct employee_t {
   bool ismanager;
 };
 
-void init_employee(struct employee_t* employee){
+void init_employee(struct employee_t *employee) {
 
   employee->income = 0;
   employee->ismanager = false;
-
 }
 
 int main() {
@@ -29,6 +28,7 @@ int main() {
     init_employee(&employees[i]);
   }
 
-  printf("%f\n",employees[10].income);
-}
+  printf("%f\n", employees[10].income);
 
+  printf("Size of sturct in bytes %lu\n", sizeof(struct employee_t));
+}
