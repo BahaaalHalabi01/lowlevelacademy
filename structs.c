@@ -12,6 +12,11 @@ struct __attribute__((__packed__)) employee_t {
   bool ismanager;
 };
 
+struct employee {
+  int age;
+  char name[64];
+};
+
 void init_employee(struct employee_t *employee) {
 
   employee->income = 0;
@@ -28,7 +33,9 @@ int main() {
     init_employee(&employees[i]);
   }
 
-  printf("%f\n", employees[10].income);
+  struct employee test = {3, "test"};
+
+  printf("%d  %s\n ", test.age,test.name);
 
   printf("Size of sturct in bytes %lu\n", sizeof(struct employee_t));
 }
