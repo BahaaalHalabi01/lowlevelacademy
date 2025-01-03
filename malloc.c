@@ -37,8 +37,8 @@ int main() {
 
   printf("%d  \n", employees[0].income);
 
+  //valgrind --leak-check=full ./malloc -s to check for leaks
   destroy_employee(employees);
-
 
   return 0;
 }
