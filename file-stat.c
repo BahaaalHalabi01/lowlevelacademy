@@ -1,5 +1,7 @@
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 struct database_header_t {
@@ -28,11 +30,24 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  close(fd);
-
   printf("Database Version %d\n", header.version);
   printf("Database employees %d\n", header.employees);
   printf("Database filelength %d\n", header.filelength);
 
+  struct stat db_stat = {0};
+
+  if (fstat(fd, &db_stat) != 0) {
+    perror("fstat");
+    return -1;
+  }
+
+  printf("File size from fstat: %ld\n", db_stat.st_size);
+
+  if (db_stat.st_size != header.filelength) {
+    printf("File corrupted,existing \n");
+    return -2;
+  }
+
+  close(fd);
   return 0;
 }
