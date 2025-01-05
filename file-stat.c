@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
 
   if (read(fd, &header, sizeof(header)) != sizeof(header)) {
     perror("read");
+    close(fd);
     return -1;
   }
 
@@ -38,6 +39,7 @@ int main(int argc, char *argv[]) {
 
   if (fstat(fd, &db_stat) != 0) {
     perror("fstat");
+    close(fd);
     return -1;
   }
 

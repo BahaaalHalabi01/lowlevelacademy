@@ -25,14 +25,15 @@ int main(int argc, char *argv[]) {
 
   if (read(fd, &header, sizeof(header)) != sizeof(header)) {
     perror("read");
+    close(fd);
     return -1;
   }
 
-  close(fd);
 
   printf("Database Version %d\n", header.version);
   printf("Database employees %d\n", header.employees);
   printf("Database filelength %d\n", header.filelength);
 
+  close(fd);
   return 0;
 }
