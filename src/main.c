@@ -1,27 +1,37 @@
 #include <fcntl.h>
+#include <getopt.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
 
-#include "../include/file.h"
-#include "../include/parse.h"
-
 int main(int argc, char *argv[]) {
 
-  if (argc != 2) {
-    printf("Incorrect usage of program. Use %s <file_name> \n", argv[0]);
-    return -1;
+  int c;
+
+  char *db_path = NULL;
+  bool new_file = false;
+
+  while ((c = getopt(argc, argv, "nf:")) != -1) {
+    switch (c) {
+    case 'n':
+      new_file = true;
+      break;
+
+    case 'f':
+      db_path = optarg;
+      break;
+
+    case '?':
+      printf("Unknown param -%c\n", c);
+      break;
+
+    default:
+      return -1;
+    }
   }
 
-  int fd = file_open(argv[1]);
+  printf("Create a new file %d\n",new_file);
+  printf("With db path  %s\n",db_path);
 
-  struct database_header_t header = {0};
-
-  parse_db_header(fd, &header);
-
-  printf("Database Version %d\n", header.version);
-  printf("Database employees %d\n", header.employees);
-  printf("Database filelength %d\n", header.filelength);
-
-  close(fd);
   return 0;
 }
