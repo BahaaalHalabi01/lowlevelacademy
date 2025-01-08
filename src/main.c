@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
   }
 
   int dbfd;
+  struct db_header_t *db_header = {0};
 
   if (new_file) {
     dbfd = db_create_file(db_path);
@@ -55,6 +56,13 @@ int main(int argc, char *argv[]) {
       printf("Could not create the database file\n");
       return -1;
     }
+
+    if (create_db_header(dbfd, &db_header) == STATUS_ERROR) {
+      printf("Failed to create a database header\n");
+      close(dbfd);
+      return -1;
+    };
+
   } else {
 
     dbfd = db_open_file(db_path);
@@ -64,8 +72,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // printf("Create a new file %d\n", new_file);
-  // printf("With db path  %s\n", db_path);
+  printf("new file?: %d\n", new_file);
+  printf("db path:  %s\n", db_path);
 
   return 0;
 }

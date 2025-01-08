@@ -15,8 +15,8 @@ int db_open_file(char *f_name) {
 
   return fd;
 };
-int db_create_file(char *f_name) {
 
+int db_create_file(char *f_name) {
   int fd = open(f_name, O_RDONLY);
   if (fd != -1) {
     printf("Database file already exists\n");
