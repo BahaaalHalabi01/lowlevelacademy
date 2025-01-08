@@ -50,21 +50,22 @@ int main(int argc, char *argv[]) {
   int dbfd;
 
   if (new_file) {
-    dbfd = db_open_file(db_path);
-    if (dbfd == STATUS_ERROR) {
-      printf("Could not open the database file\n");
-      return -1;
-    }
-  } else {
     dbfd = db_create_file(db_path);
     if (dbfd == STATUS_ERROR) {
       printf("Could not create the database file\n");
       return -1;
     }
+  } else {
+
+    dbfd = db_open_file(db_path);
+    if (dbfd == STATUS_ERROR) {
+      printf("Could not open the database file\n");
+      return -1;
+    }
   }
 
-  printf("Create a new file %d\n", new_file);
-  printf("With db path  %s\n", db_path);
+  // printf("Create a new file %d\n", new_file);
+  // printf("With db path  %s\n", db_path);
 
   return 0;
 }
