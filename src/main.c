@@ -23,18 +23,22 @@ int main(int argc, char *argv[]) {
   char *db_path = NULL;
   char *input_string = NULL;
   bool new_file = false;
+  bool list_flag = false;
 
-  while ((c = getopt(argc, argv, "nf:a:")) != -1) {
+  while ((c = getopt(argc, argv, "nf:a:l")) != -1) {
     switch (c) {
+
     case 'n':
       new_file = true;
       break;
-
     case 'f':
       db_path = optarg;
       break;
     case 'a':
       input_string = optarg;
+      break;
+    case 'l':
+      list_flag = true;
       break;
 
     case '?':
@@ -88,9 +92,9 @@ int main(int argc, char *argv[]) {
   }
 
   printf("Database information:\n");
-  printf("\temployees:%d\n",dbhdr->employees_count);
-  printf("\tdatabase size:%d\n",dbhdr->filesize);
-  printf("\tdatabase version:%d\n",dbhdr->version);
+  printf("\temployees:%d\n", dbhdr->employees_count);
+  printf("\tdatabase size:%d\n", dbhdr->filesize);
+  printf("\tdatabase version:%d\n", dbhdr->version);
 
   struct employee_t *employees = NULL;
 
@@ -101,7 +105,6 @@ int main(int argc, char *argv[]) {
     printf("Could not read employees from database file \n");
     return -1;
   };
-
 
   if (input_string) {
 
@@ -127,11 +130,11 @@ int main(int argc, char *argv[]) {
     }
   };
 
-  output_file(dbfd, dbhdr,employees);
+  if (list_flag){
+    list_employees(dbfd, dbhdr, employees);
+  }
 
-
-
-
+  output_file(dbfd, dbhdr, employees);
 
   close(dbfd);
   free(dbhdr);

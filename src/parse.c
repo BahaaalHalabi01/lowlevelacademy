@@ -197,3 +197,16 @@ void output_file(int fd, struct db_header_t *header,
     };
   }
 }
+
+void list_employees(struct db_header_t *db_header,struct employee_t *employees){
+
+  printf("Printing all employee information:\n");
+  for (int i = 0;i<db_header->employees_count;i++){
+    printf("\tEmployee [%d\\%d]\n",i+1,db_header->employees_count);
+    printf("\tName: %s\n",employees[i].name);
+    printf("\tAddress: %s\n",employees[i].address);
+    printf("\tHours: %d\n",employees[i].hours);
+    printf("\n");
+  }
+
+}
