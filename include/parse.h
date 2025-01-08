@@ -2,7 +2,7 @@
 #define PARSE_H
 
 #define HEADER_SIGNATURE 0x4c4c4144
-#define CURRENT_VERSION 1
+#define CURRENT_VERSION 0x1
 
 struct db_header_t {
   unsigned int signature;
@@ -20,5 +20,6 @@ struct employee_t {
 int create_db_header(int fd,struct db_header_t **header_out);
 int validate_db_header(int fd,struct db_header_t **header_out);
 int read_employees(int fd, struct db_header_t **header_out);
+void output_file(int fd, struct db_header_t *header_out);
 
 #endif

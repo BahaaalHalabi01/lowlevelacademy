@@ -6,8 +6,7 @@
 #include "../include/file.h"
 
 int db_open_file(char *f_name) {
-  int fd = open(f_name, O_RDONLY);
-  printf("opened file with fd %d\n",fd);
+  int fd = open(f_name, O_RDWR);
   if (fd == -1) {
     perror("open");
     return STATUS_ERROR;
