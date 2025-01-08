@@ -160,43 +160,18 @@ int add_employee(int fd, struct db_header_t *db_header,
 };
 
 int remove_employee(struct db_header_t *db_header, struct employee_t *employees,
-                    char *input_string) {
-
-  int to_delete_count = 0;
-  int to_delete_index = 0;
-  int *to_delete = NULL;
-
-  for (int i = 0; i < db_header->employees_count; i++) {
-
-    if (strstr(employees[i].name, input_string) != NULL) {
-      //debug
-      // printf("To delete %s at index %d\n", employees[i].name, i);
-
-      to_delete_count++;
-      to_delete = realloc(to_delete, to_delete_count * sizeof(int));
-      to_delete[to_delete_index++] = i;
-    }
-  }
-
-  int new_count = db_header->employees_count - to_delete_count;
-  if (new_count == 0) {
-    // how does this work, i am still confused?
-    struct employee_t *empty = NULL;
-    employees = empty;
-
-    db_header->employees_count = new_count;
-
-    return STATUS_SUCCESS;
-  }
+                    char *input_string, int *to_delete, int to_delete_count,
+                    struct employee_t **out) {
 
   int current_size = db_header->employees_count;
   for (int y = 0; y < to_delete_count; y++) {
 
-    //woowwwwww this is so horribale to look at
-    int current = to_delete[y] -y;
+    // woowwwwww this is so horribale to look at
+    int current = to_delete[y] - y;
     current_size--;
 
-    printf("currently deleting element at index %d %s\n", current, employees[current].name);
+    printf("currently deleting element at index %d %s\n", current,
+           employees[current].name);
 
     // last element
     if (current == current_size) {
@@ -211,7 +186,7 @@ int remove_employee(struct db_header_t *db_header, struct employee_t *employees,
 
     // this is a stupid way, but idk other than this if not using a linked
     // list??? shift the array to the back
-    for (int i = current; i < db_header->employees_count - 1; i++) {
+    for (int i = current; i < current_size - 1; i++) {
       employees[i] = employees[i + 1];
     };
 
@@ -223,8 +198,8 @@ int remove_employee(struct db_header_t *db_header, struct employee_t *employees,
     }
   }
 
-  printf("current size? %d\n",current_size);
   db_header->employees_count = current_size;
+  *out = employees;
 
   return STATUS_SUCCESS;
 }
@@ -258,6 +233,7 @@ void output_file(int fd, struct db_header_t *header,
   }
 
   for (int i = 0; i < real_count; i++) {
+    printf("Writing employee with name %s\n", employees[i].name);
     // every time i am writing something i have to change endian
     employees[i].hours = htonl(employees[i].hours);
 
@@ -279,4 +255,61 @@ void list_employees(struct db_header_t *db_header,
     printf("\tHours: %d\n", employees[i].hours);
     printf("\n");
   }
+}
+
+int find_by_name(struct db_header_t *db_header, struct employee_t *employees,
+                 char *input_string, int **found_list, int *found_count) {
+
+  int to_delete_count = 0;
+  int to_delete_index = 0;
+  int *to_delete = NULL;
+
+  for (int i = 0; i < db_header->employees_count; i++) {
+
+    if (strstr(employees[i].name, input_string) != NULL) {
+      // debug
+      //  printf("To delete %s at index %d\n", employees[i].name, i);
+
+      to_delete_count++;
+      to_delete = realloc(to_delete, to_delete_count * sizeof(int));
+      to_delete[to_delete_index++] = i;
+    }
+  }
+
+  *found_list = to_delete;
+  *found_count = to_delete_count;
+
+  return STATUS_SUCCESS;
+}
+
+void clear_file_employees(int fd, struct db_header_t *header) {
+
+  if (fd < 0) {
+    printf("Bad file descriptor from the user\n");
+    return;
+  }
+
+  int real_count = header->employees_count;
+  int file_size =
+      sizeof(struct db_header_t) + (sizeof(struct employee_t) * real_count);
+
+  // we are storing in network byte order ( BE) always
+  header->version = htons(header->version);
+  header->employees_count = htons(header->employees_count);
+  header->filesize = htonl(file_size);
+  header->signature = htonl(header->signature);
+
+  if (lseek(fd, 0, SEEK_SET) == -1) {
+    perror("lseek");
+    return;
+  }
+
+  if (write(fd, header, sizeof(struct db_header_t)) == -1) {
+    printf("here\n");
+    perror("write");
+    return;
+  }
+
+  ftruncate(fd,sizeof(struct db_header_t));
+
 }

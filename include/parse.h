@@ -17,14 +17,22 @@ struct employee_t {
   unsigned int hours;
 };
 
-int create_db_header(int fd,struct db_header_t **header_out);
-int validate_db_header(int fd,struct db_header_t **header_out);
-int read_employees(int fd, struct db_header_t *db_header,struct employee_t **employees_out);
-int add_employee(int fd, struct db_header_t *db_header,struct employee_t *employees,char *input_string);
-int remove_employee(struct db_header_t *db_header,struct employee_t *employees,char *input_string);
-void output_file(int fd, struct db_header_t *db_header,struct employee_t *employees);
-void list_employees(struct db_header_t *db_header,struct employee_t *employees);
+int create_db_header(int fd, struct db_header_t **header_out);
+int validate_db_header(int fd, struct db_header_t **header_out);
+int read_employees(int fd, struct db_header_t *db_header,
+                   struct employee_t **employees_out);
+int add_employee(int fd, struct db_header_t *db_header,
+                 struct employee_t *employees, char *input_string);
+int remove_employee(struct db_header_t *db_header, struct employee_t *employees,
+                    char *input_string,int *to_delete, int to_delete_count,struct employee_t **out);
 
+int find_by_name(struct db_header_t *db_header, struct employee_t *employees,
+                 char *input_string, int **found_list, int *found_count);
+void output_file(int fd, struct db_header_t *db_header,
+                 struct employee_t *employees);
 
+void clear_file_employees(int fd, struct db_header_t *db_header);
+void list_employees(struct db_header_t *db_header,
+                    struct employee_t *employees);
 
 #endif

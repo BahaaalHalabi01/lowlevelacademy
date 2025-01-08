@@ -135,11 +135,18 @@ int main(int argc, char *argv[]) {
     }
   };
 
-  printf("size of employees before %lu\n",sizeof(*employees));;
-
   if (remove_string) {
 
-    if (remove_employee(dbhdr, employees, remove_string) == STATUS_ERROR) {
+    int *to_delete = NULL;
+    int to_delete_count = 0;
+
+    //todo checkh error
+    find_by_name(dbhdr, employees, remove_string, &to_delete, &to_delete_count);
+
+    clear_file_employees(dbfd, dbhdr);
+
+    if (remove_employee(dbhdr, employees, remove_string, to_delete,
+                        to_delete_count, &employees) == STATUS_ERROR) {
       printf("Could remove  employee with the provided name \n");
       close(dbfd);
       free(dbhdr);
@@ -147,8 +154,6 @@ int main(int argc, char *argv[]) {
       return -1;
     }
   }
-
-  printf("size of employees after %lu\n",sizeof(*employees));;
 
   if (list_flag) {
     list_employees(dbhdr, employees);
