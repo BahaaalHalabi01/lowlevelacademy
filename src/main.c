@@ -4,17 +4,16 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "../include/common.h"
 #include "../include/file.h"
 #include "../include/parse.h"
 
 void print_usage(char *argv[]) {
 
-
-  printf("Usage: %s -n -f <datbase path>\n",argv[0]);
+  printf("Usage: %s -n -f <datbase path>\n", argv[0]);
   printf("\t -n - create a new database file\n");
   printf("\t -f - (required) path to a database file\n");
   return;
-
 }
 
 int main(int argc, char *argv[]) {
@@ -46,6 +45,22 @@ int main(int argc, char *argv[]) {
     printf("Database path is a required argument\n");
     print_usage(argv);
     return 0;
+  }
+
+  int dbfd;
+
+  if (new_file) {
+    dbfd = db_open_file(db_path);
+    if (dbfd == STATUS_ERROR) {
+      printf("Could not open the database file\n");
+      return -1;
+    }
+  } else {
+    dbfd = db_create_file(db_path);
+    if (dbfd == STATUS_ERROR) {
+      printf("Could not create the database file\n");
+      return -1;
+    }
   }
 
   printf("Create a new file %d\n", new_file);
