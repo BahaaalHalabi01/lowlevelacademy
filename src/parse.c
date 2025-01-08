@@ -162,37 +162,60 @@ int add_employee(int fd, struct db_header_t *db_header,
 int remove_employee(struct db_header_t *db_header, struct employee_t *employees,
                     char *input_string) {
 
-  int new_count = 0;
-  int to_delete = -1;
+  int to_delete_count = 0;
+  int to_delete_index = 0;
+  int *to_delete = NULL;
+
   for (int i = 0; i < db_header->employees_count; i++) {
 
     if (strstr(employees[i].name, input_string) != NULL) {
-      printf("name is is this employee %s %s\n", employees[i].name,
-             input_string);
-      to_delete = i;
-      // assume for now we delete only the first
-      break;
-    } else {
-      new_count++;
+      //debug
+      // printf("To delete %s at index %d\n", employees[i].name, i);
+
+      to_delete_count++;
+      to_delete = realloc(to_delete, to_delete_count * sizeof(int));
+      to_delete[to_delete_index++] = i;
     }
   }
 
-  printf("need to remove index %d with new count %d\n", to_delete,new_count);
-
+  int new_count = db_header->employees_count - to_delete_count;
   if (new_count == 0) {
-    //how does this work, i am still confused?
+    // how does this work, i am still confused?
     struct employee_t *empty = NULL;
     employees = empty;
-  } else {
+
+    db_header->employees_count = new_count;
+
+    return STATUS_SUCCESS;
+  }
+
+  int current_size = db_header->employees_count;
+  for (int y = 0; y < to_delete_count; y++) {
+
+    //woowwwwww this is so horribale to look at
+    int current = to_delete[y] -y;
+    current_size--;
+
+    printf("currently deleting element at index %d %s\n", current, employees[current].name);
+
+    // last element
+    if (current == current_size) {
+      employees = realloc(employees, current_size * sizeof(struct employee_t));
+
+      if (employees == NULL) {
+        printf("Can not allocate memory for this struct\n");
+        return STATUS_ERROR;
+      }
+      continue;
+    }
 
     // this is a stupid way, but idk other than this if not using a linked
-    // list???
-    for (int i = to_delete; i < db_header->employees_count - 1; i++) {
-      printf("i ? %d\n", i);
-      employees[i + 1] = employees[i];
+    // list??? shift the array to the back
+    for (int i = current; i < db_header->employees_count - 1; i++) {
+      employees[i] = employees[i + 1];
     };
 
-    employees = realloc(employees, new_count * sizeof(struct employee_t));
+    employees = realloc(employees, current_size * sizeof(struct employee_t));
 
     if (employees == NULL) {
       printf("Can not allocate memory for this struct\n");
@@ -200,7 +223,8 @@ int remove_employee(struct db_header_t *db_header, struct employee_t *employees,
     }
   }
 
-  db_header->employees_count = new_count;
+  printf("current size? %d\n",current_size);
+  db_header->employees_count = current_size;
 
   return STATUS_SUCCESS;
 }
@@ -249,7 +273,7 @@ void list_employees(struct db_header_t *db_header,
 
   printf("Printing all employee information:\n");
   for (int i = 0; i < db_header->employees_count; i++) {
-    printf("\tEmployee [%d\\%d]\n", i + 1, db_header->employees_count);
+    printf("\tEmployee [%d\\%d]\n", i, db_header->employees_count - 1);
     printf("\tName: %s\n", employees[i].name);
     printf("\tAddress: %s\n", employees[i].address);
     printf("\tHours: %d\n", employees[i].hours);

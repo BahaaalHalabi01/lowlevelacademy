@@ -135,11 +135,22 @@ int main(int argc, char *argv[]) {
     }
   };
 
-  if(remove_string){
-    remove_employee(dbhdr, employees, remove_string);
+  printf("size of employees before %lu\n",sizeof(*employees));;
+
+  if (remove_string) {
+
+    if (remove_employee(dbhdr, employees, remove_string) == STATUS_ERROR) {
+      printf("Could remove  employee with the provided name \n");
+      close(dbfd);
+      free(dbhdr);
+      free(employees);
+      return -1;
+    }
   }
 
-  if (list_flag){
+  printf("size of employees after %lu\n",sizeof(*employees));;
+
+  if (list_flag) {
     list_employees(dbhdr, employees);
   }
 
