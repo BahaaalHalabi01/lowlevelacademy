@@ -159,28 +159,33 @@ int add_employee(int fd, struct db_header_t *db_header,
   return STATUS_SUCCESS;
 };
 
-int remove_employee(struct db_header_t *db_header, struct employee_t *employees,
-                    char *input_string, int *to_delete, int to_delete_count,
-                    struct employee_t **out) {
+int remove_employee(struct db_header_t *db_header,
+                    struct employee_t **employees_out, char *input_string) {
 
+  struct employee_t *employees = *employees_out;
   int current_size = db_header->employees_count;
-  for (int y = 0; y < to_delete_count; y++) {
 
-    // woowwwwww this is so horribale to look at
-    int current = to_delete[y] - y;
-    current_size--;
+  int found_index = -1;
+  do {
 
-    printf("currently deleting element at index %d %s\n", current,
-           employees[current].name);
+    find_by_name(current_size, employees, input_string, &found_index);
+    int current = found_index;
+
+    if (found_index == -1) {
+      break;
+    }
 
     // last element
     if (current == current_size) {
-      employees = realloc(employees, current_size * sizeof(struct employee_t));
+      employees =
+          realloc(employees, (current_size - 1) * sizeof(struct employee_t));
 
       if (employees == NULL) {
         printf("Can not allocate memory for this struct\n");
         return STATUS_ERROR;
       }
+
+      current_size--;
       continue;
     }
 
@@ -190,16 +195,20 @@ int remove_employee(struct db_header_t *db_header, struct employee_t *employees,
       employees[i] = employees[i + 1];
     };
 
-    employees = realloc(employees, current_size * sizeof(struct employee_t));
+    employees =
+        realloc(employees, (current_size - 1) * sizeof(struct employee_t));
 
     if (employees == NULL) {
       printf("Can not allocate memory for this struct\n");
       return STATUS_ERROR;
     }
-  }
+
+    current_size--;
+
+  } while (found_index != -1);
 
   db_header->employees_count = current_size;
-  *out = employees;
+  *employees_out = employees;
 
   return STATUS_SUCCESS;
 }
@@ -242,6 +251,14 @@ void output_file(int fd, struct db_header_t *header,
       return;
     };
   }
+
+  struct stat db_stat = {0};
+  if (fstat(fd, &db_stat) != 0) {
+    perror("fstat");
+  }
+  if (db_stat.st_size > file_size) {
+    ftruncate(fd, file_size);
+  }
 }
 
 void list_employees(struct db_header_t *db_header,
@@ -257,27 +274,19 @@ void list_employees(struct db_header_t *db_header,
   }
 }
 
-int find_by_name(struct db_header_t *db_header, struct employee_t *employees,
-                 char *input_string, int **found_list, int *found_count) {
+int find_by_name(int current_size, struct employee_t *employees,
+                 char *input_string, int *found_index) {
 
-  int to_delete_count = 0;
-  int to_delete_index = 0;
-  int *to_delete = NULL;
+  int to_delete = -1;
 
-  for (int i = 0; i < db_header->employees_count; i++) {
-
+  for (int i = 0; i < current_size; i++) {
     if (strstr(employees[i].name, input_string) != NULL) {
-      // debug
-      //  printf("To delete %s at index %d\n", employees[i].name, i);
-
-      to_delete_count++;
-      to_delete = realloc(to_delete, to_delete_count * sizeof(int));
-      to_delete[to_delete_index++] = i;
+      to_delete = i;
+      break;
     }
   }
 
-  *found_list = to_delete;
-  *found_count = to_delete_count;
+  *found_index = to_delete;
 
   return STATUS_SUCCESS;
 }
@@ -309,7 +318,4 @@ void clear_file_employees(int fd, struct db_header_t *header) {
     perror("write");
     return;
   }
-
-  ftruncate(fd,sizeof(struct db_header_t));
-
 }

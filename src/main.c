@@ -137,16 +137,7 @@ int main(int argc, char *argv[]) {
 
   if (remove_string) {
 
-    int *to_delete = NULL;
-    int to_delete_count = 0;
-
-    //todo checkh error
-    find_by_name(dbhdr, employees, remove_string, &to_delete, &to_delete_count);
-
-    clear_file_employees(dbfd, dbhdr);
-
-    if (remove_employee(dbhdr, employees, remove_string, to_delete,
-                        to_delete_count, &employees) == STATUS_ERROR) {
+    if (remove_employee(dbhdr, &employees, remove_string) == STATUS_ERROR) {
       printf("Could remove  employee with the provided name \n");
       close(dbfd);
       free(dbhdr);

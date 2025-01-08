@@ -23,15 +23,14 @@ int read_employees(int fd, struct db_header_t *db_header,
                    struct employee_t **employees_out);
 int add_employee(int fd, struct db_header_t *db_header,
                  struct employee_t *employees, char *input_string);
-int remove_employee(struct db_header_t *db_header, struct employee_t *employees,
-                    char *input_string,int *to_delete, int to_delete_count,struct employee_t **out);
+int remove_employee(struct db_header_t *db_header,
+                    struct employee_t **employees_out, char *input_string);
 
-int find_by_name(struct db_header_t *db_header, struct employee_t *employees,
-                 char *input_string, int **found_list, int *found_count);
+int find_by_name(int current_size, struct employee_t *employees,
+                 char *input_string, int *found_index);
 void output_file(int fd, struct db_header_t *db_header,
                  struct employee_t *employees);
 
-void clear_file_employees(int fd, struct db_header_t *db_header);
 void list_employees(struct db_header_t *db_header,
                     struct employee_t *employees);
 
