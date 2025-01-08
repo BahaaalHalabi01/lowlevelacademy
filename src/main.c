@@ -22,10 +22,11 @@ int main(int argc, char *argv[]) {
   int c;
   char *db_path = NULL;
   char *input_string = NULL;
+  char *remove_string = NULL;
   bool new_file = false;
   bool list_flag = false;
 
-  while ((c = getopt(argc, argv, "nf:a:l")) != -1) {
+  while ((c = getopt(argc, argv, "nf:a:lr:")) != -1) {
     switch (c) {
 
     case 'n':
@@ -36,6 +37,9 @@ int main(int argc, char *argv[]) {
       break;
     case 'a':
       input_string = optarg;
+      break;
+    case 'r':
+      remove_string = optarg;
       break;
     case 'l':
       list_flag = true;
@@ -117,7 +121,8 @@ int main(int argc, char *argv[]) {
       printf("Can not allocate memory for this struct\n");
       close(dbfd);
       free(dbhdr);
-      free(employees);
+      // can you free a null pointer???
+      // free(employees);
       return -1;
     }
 
@@ -130,8 +135,12 @@ int main(int argc, char *argv[]) {
     }
   };
 
+  if(remove_string){
+    remove_employee(dbhdr, employees, remove_string);
+  }
+
   if (list_flag){
-    list_employees(dbfd, dbhdr, employees);
+    list_employees(dbhdr, employees);
   }
 
   output_file(dbfd, dbhdr, employees);

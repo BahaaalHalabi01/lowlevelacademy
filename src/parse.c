@@ -1,5 +1,5 @@
-#include <arpa/inet.h>
 #include <fcntl.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -159,6 +159,52 @@ int add_employee(int fd, struct db_header_t *db_header,
   return STATUS_SUCCESS;
 };
 
+int remove_employee(struct db_header_t *db_header, struct employee_t *employees,
+                    char *input_string) {
+
+  int new_count = 0;
+  int to_delete = -1;
+  for (int i = 0; i < db_header->employees_count; i++) {
+
+    if (strstr(employees[i].name, input_string) != NULL) {
+      printf("name is is this employee %s %s\n", employees[i].name,
+             input_string);
+      to_delete = i;
+      // assume for now we delete only the first
+      break;
+    } else {
+      new_count++;
+    }
+  }
+
+  printf("need to remove index %d with new count %d\n", to_delete,new_count);
+
+  if (new_count == 0) {
+    //how does this work, i am still confused?
+    struct employee_t *empty = NULL;
+    employees = empty;
+  } else {
+
+    // this is a stupid way, but idk other than this if not using a linked
+    // list???
+    for (int i = to_delete; i < db_header->employees_count - 1; i++) {
+      printf("i ? %d\n", i);
+      employees[i + 1] = employees[i];
+    };
+
+    employees = realloc(employees, new_count * sizeof(struct employee_t));
+
+    if (employees == NULL) {
+      printf("Can not allocate memory for this struct\n");
+      return STATUS_ERROR;
+    }
+  }
+
+  db_header->employees_count = new_count;
+
+  return STATUS_SUCCESS;
+}
+
 void output_file(int fd, struct db_header_t *header,
                  struct employee_t *employees) {
 
@@ -198,15 +244,15 @@ void output_file(int fd, struct db_header_t *header,
   }
 }
 
-void list_employees(struct db_header_t *db_header,struct employee_t *employees){
+void list_employees(struct db_header_t *db_header,
+                    struct employee_t *employees) {
 
   printf("Printing all employee information:\n");
-  for (int i = 0;i<db_header->employees_count;i++){
-    printf("\tEmployee [%d\\%d]\n",i+1,db_header->employees_count);
-    printf("\tName: %s\n",employees[i].name);
-    printf("\tAddress: %s\n",employees[i].address);
-    printf("\tHours: %d\n",employees[i].hours);
+  for (int i = 0; i < db_header->employees_count; i++) {
+    printf("\tEmployee [%d\\%d]\n", i + 1, db_header->employees_count);
+    printf("\tName: %s\n", employees[i].name);
+    printf("\tAddress: %s\n", employees[i].address);
+    printf("\tHours: %d\n", employees[i].hours);
     printf("\n");
   }
-
 }
