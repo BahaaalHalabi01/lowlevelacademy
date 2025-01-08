@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -114,6 +115,42 @@ int read_employees(int fd, struct db_header_t *db_header,
   }
 
   *employees_out = employees;
+
+  return STATUS_SUCCESS;
+};
+
+int add_employee(int fd, struct db_header_t *db_header,
+                 struct employee_t *employees, char *input_string) {
+
+  if (fd < 0) {
+    printf("Bad file descriptor from the user\n");
+    return STATUS_ERROR;
+  }
+
+  char *name = strtok(input_string, ",");
+  if (name == NULL) {
+    printf("No provided name in the input string: %s\n", input_string);
+    return STATUS_ERROR;
+  }
+  char *address = strtok(NULL, ",");
+  if (address == NULL) {
+    printf("No provided address in the input string: %s\n", input_string);
+    return STATUS_ERROR;
+  }
+  char *hours = strtok(NULL, ",");
+  if (hours == NULL) {
+    printf("No provided hours in the input string: %s\n", input_string);
+    return STATUS_ERROR;
+  }
+
+  struct employee_t *current_employee =
+      &employees[db_header->employees_count - 1];
+
+  strncpy(current_employee->name, name, sizeof(current_employee->name));
+  strncpy(current_employee->address, address, sizeof(current_employee->address));
+  current_employee->hours = atoi(hours);
+
+  printf("current employee: %s %s %d \n",current_employee->name,current_employee->address,current_employee->hours);
 
   return STATUS_SUCCESS;
 };
