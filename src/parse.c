@@ -30,7 +30,7 @@ int validate_db_header(int fd, struct db_header_t **header_out) {
 
   if (fd < 0) {
     // do i really need to check this ? is not being checked
-    // in db_open_file ?
+    // in db_open_file ? just good practise as this  is kinda an api ?
     printf("Bad file descriptor from the user\n");
     return STATUS_ERROR;
   }
@@ -45,7 +45,7 @@ int validate_db_header(int fd, struct db_header_t **header_out) {
       sizeof(struct db_header_t)) {
     perror("read");
     free(header);
-    return -1;
+    return STATUS_ERROR;
   }
   // network to host byte order to use it correctly on our system
   // we are storing in network byte order ( BE) always
@@ -80,6 +80,40 @@ int validate_db_header(int fd, struct db_header_t **header_out) {
   }
 
   *header_out = header;
+
+  return STATUS_SUCCESS;
+};
+
+int read_employees(int fd, struct db_header_t *db_header,
+                   struct employee_t **employees_out) {
+
+  if (fd < 0) {
+    printf("Bad file descriptor from the user\n");
+    return STATUS_ERROR;
+  }
+
+  int employees_count = db_header->employees_count;
+
+  struct employee_t *employees =
+      calloc(employees_count, sizeof(struct employee_t));
+
+  if (employees == NULL) {
+    printf("Can not allocate memory for this struct\n");
+    return STATUS_ERROR;
+  }
+
+  if (read(fd, employees, employees_count * sizeof(struct employee_t)) !=
+      employees_count * sizeof(struct db_header_t)) {
+    perror("read");
+    free(employees);
+    return STATUS_ERROR;
+  }
+
+  for (int i = 0; i < employees_count; i++) {
+    employees[i].hours = ntohl(employees[i].hours);
+  }
+
+  *employees_out = employees;
 
   return STATUS_SUCCESS;
 };

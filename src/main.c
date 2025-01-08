@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "../include/common.h"
@@ -48,7 +49,7 @@ int main(int argc, char *argv[]) {
   }
 
   int dbfd;
-  struct db_header_t *dbhdr = {0};
+  struct db_header_t *dbhdr = NULL;
 
   if (new_file) {
     dbfd = db_create_file(db_path);
@@ -78,6 +79,15 @@ int main(int argc, char *argv[]) {
 
   printf("new file?: %d\n", new_file);
   printf("db path:  %s\n", db_path);
+
+  struct employee_t *employees = NULL;
+
+  if (read_employees(dbfd, dbhdr, &employees) == STATUS_ERROR) {
+    close(dbfd);
+    free(employees);
+    printf("Could not read employees from database file \n");
+    return -1;
+  };
 
   output_file(dbfd, dbhdr);
 
