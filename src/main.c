@@ -46,11 +46,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // debug only
-  printf("Employee input %s\n", input_string);
-  printf("new file?: %d\n", new_file);
-  printf("db path:  %s\n", db_path);
-
   if (db_path == NULL) {
     printf("Database path is a required argument\n");
     print_usage(argv);
@@ -92,6 +87,11 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  printf("Database information:\n");
+  printf("\temployees:%d\n",dbhdr->employees_count);
+  printf("\tdatabase size:%d\n",dbhdr->filesize);
+  printf("\tdatabase version:%d\n",dbhdr->version);
+
   struct employee_t *employees = NULL;
 
   if (read_employees(dbfd, dbhdr, &employees) == STATUS_ERROR) {
@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
     printf("Could not read employees from database file \n");
     return -1;
   };
+
 
   if (input_string) {
 
@@ -126,12 +127,15 @@ int main(int argc, char *argv[]) {
     }
   };
 
-  output_file(dbfd, dbhdr);
+  output_file(dbfd, dbhdr,employees);
 
-  printf("\n");
+
+
+
 
   close(dbfd);
   free(dbhdr);
   free(employees);
+  printf("\n");
   return 0;
 }

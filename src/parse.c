@@ -103,8 +103,10 @@ int read_employees(int fd, struct db_header_t *db_header,
     return STATUS_ERROR;
   }
 
-  if (read(fd, employees, employees_count * sizeof(struct employee_t)) !=
-      employees_count * sizeof(struct db_header_t)) {
+  // which one to use?
+  // if (read(fd, employees, employees_count * sizeof(struct employee_t)) !=
+  // employees_count * sizeof(struct employee_t)) {
+  if (read(fd, employees, employees_count * sizeof(struct employee_t)) == -1) {
     perror("read");
     free(employees);
     return STATUS_ERROR;
@@ -147,34 +149,51 @@ int add_employee(int fd, struct db_header_t *db_header,
       &employees[db_header->employees_count - 1];
 
   strncpy(current_employee->name, name, sizeof(current_employee->name));
-  strncpy(current_employee->address, address, sizeof(current_employee->address));
+  strncpy(current_employee->address, address,
+          sizeof(current_employee->address));
   current_employee->hours = atoi(hours);
 
-  printf("current employee: %s %s %d \n",current_employee->name,current_employee->address,current_employee->hours);
+  printf("adding employee: %s %s %d \n", current_employee->name,
+         current_employee->address, current_employee->hours);
 
   return STATUS_SUCCESS;
 };
 
-void output_file(int fd, struct db_header_t *header) {
+void output_file(int fd, struct db_header_t *header,
+                 struct employee_t *employees) {
 
   if (fd < 0) {
     printf("Bad file descriptor from the user\n");
     return;
   }
 
+  int real_count = header->employees_count;
+  int file_size =
+      sizeof(struct db_header_t) + (sizeof(struct employee_t) * real_count);
+
   // we are storing in network byte order ( BE) always
   header->version = htons(header->version);
   header->employees_count = htons(header->employees_count);
-  header->filesize = htonl(header->filesize);
+  header->filesize = htonl(file_size);
   header->signature = htonl(header->signature);
 
   if (lseek(fd, 0, SEEK_SET) == -1) {
     perror("lseek");
     return;
-  };
+  }
 
   if (write(fd, header, sizeof(struct db_header_t)) == -1) {
     perror("write");
     return;
-  };
+  }
+
+  for (int i = 0; i < real_count; i++) {
+    // every time i am writing something i have to change endian
+    employees[i].hours = htonl(employees[i].hours);
+
+    if (write(fd, &employees[i], sizeof(struct employee_t)) == -1) {
+      perror("write");
+      return;
+    };
+  }
 }
