@@ -1,4 +1,4 @@
-## Starting my journey to learn this horrible language with the help of (https://lowlevel.academy/)[lowlevelacademy].
+## Starting my journey to learn this horrible language with the help of [lowlevelacademy](https://lowlevel.academy/).
 
 ### __Ok but it is a cool course and all in all i would recommend it, lowlevelcoding is great plus he uses ```neovim btw```__
 
