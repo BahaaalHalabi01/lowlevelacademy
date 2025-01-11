@@ -13,7 +13,7 @@ int main() {
   socket_info.sin_port = htons(5555);
 
   struct sockaddr_in *connection_info = {0};
-  socklen_t addrlen = 0;
+  socklen_t addrlen = sizeof(struct sockaddr);
 
   int fd = socket(AF_INET, SOCK_STREAM, 0);
 
