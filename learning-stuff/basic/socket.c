@@ -9,7 +9,7 @@ int main() {
 
   struct sockaddr_in socket_info = {0};
   socket_info.sin_family = AF_INET;
-  socket_info.sin_addr.s_addr = 0;
+  socket_info.sin_addr.s_addr = INADDR_ANY;
   socket_info.sin_port = htons(5555);
 
   struct sockaddr_in *connection_info = {0};
