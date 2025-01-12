@@ -118,11 +118,32 @@ int main() {
       }
     };
 
-    handle_client(conn_fd);
+    for (int i = 0; i < MAX_CLIENTS; i++) {
+      if (client_states[i].fd != -1 &&
+          FD_ISSET(client_states[i].fd, &read_fds)) {
+        if (client_states[i].state != STATE_CONNECTED) {
+          continue;
+        }
+        ssize_t bytes_read =
+            recv(client_states[i].fd, &client_states[i].buffer, BUFSIZE, 0);
 
-    close(conn_fd);
+        if (bytes_read <= 0) {
+          perror("recv");
+          close(client_states[i].fd);
+          client_states[i].fd = -1;
+          client_states[i].state = STATE_IDLE;
+          printf("Client disconnected or could not read from the socket\n");
+        } else {
+          printf("Received %ld bytes from client %s\n", bytes_read,
+                 inet_ntoa(client_addr.sin_addr));
+        }
+      }
+    }
+
+    // handle_client(conn_fd);
   }
 
   close(server_fd);
+  close(conn_fd);
   return 0;
 }
