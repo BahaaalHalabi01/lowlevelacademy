@@ -1,5 +1,7 @@
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
@@ -77,11 +79,11 @@ int main() {
     FD_ZERO(&read_fds);
     FD_ZERO(&write_fds);
 
-    //need to add server fd
+    // need to add server fd
     FD_SET(server_fd, &read_fds);
     nfds = server_fd + 1;
 
-    //add active clients to set
+    // add active clients to set
     for (int i = 0; i < MAX_CLIENTS; i++) {
       if (client_states[i].fd != -1) {
         FD_SET(client_states[i].fd, &read_fds);
@@ -90,12 +92,31 @@ int main() {
       }
     }
 
-    conn_fd = accept(server_fd, (struct sockaddr *)&client_addr, &addrlen);
-    if (conn_fd == -1) {
-      perror("accept");
-      close(server_fd);
-      return -1;
+    if (select(nfds, &read_fds, &write_fds, NULL, NULL) == -1) {
+      perror("select");
+      exit(EXIT_FAILURE);
     }
+
+    if (FD_ISSET(server_fd, &read_fds)) {
+      if (-1 == (conn_fd = accept(server_fd, (struct sockaddr *)&client_addr,
+                                  &addrlen))) {
+        perror("accept");
+        continue;
+      }
+
+      printf("New connection frow %s:%d\n", inet_ntoa(client_addr.sin_addr),
+             ntohs(client_addr.sin_port));
+
+      if (-1 == (free_slot = find_free_slot())) {
+        printf("Server is full,terminting new connection. with address %s\n",
+               inet_ntoa(client_addr.sin_addr));
+        close(conn_fd);
+      } else {
+        memset(&client_states[free_slot].buffer, '\0', BUFSIZE);
+        client_states[free_slot].fd = conn_fd;
+        client_states[free_slot].state = STATE_CONNECTED;
+      }
+    };
 
     handle_client(conn_fd);
 
