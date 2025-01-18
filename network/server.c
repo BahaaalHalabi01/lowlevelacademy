@@ -87,11 +87,12 @@ int main() {
     for (int i = 0; i < MAX_CLIENTS; i++) {
       if (client_states[i].fd != -1) {
         FD_SET(client_states[i].fd, &read_fds);
-        if (client_states[i].fd > nfds)
+        if (client_states[i].fd >= nfds)
           nfds = client_states[i].fd + 1;
       }
     }
 
+    // block and wait for some action
     if (select(nfds, &read_fds, &write_fds, NULL, NULL) == -1) {
       perror("select");
       exit(EXIT_FAILURE);
@@ -121,21 +122,22 @@ int main() {
     for (int i = 0; i < MAX_CLIENTS; i++) {
       if (client_states[i].fd != -1 &&
           FD_ISSET(client_states[i].fd, &read_fds)) {
-        if (client_states[i].state != STATE_CONNECTED) {
-          continue;
-        }
+
+         if (client_states[i].state != STATE_CONNECTED) {
+           continue;
+         }
         ssize_t bytes_read =
-            recv(client_states[i].fd, &client_states[i].buffer, BUFSIZE, 0);
+            read(client_states[i].fd, &client_states[i].buffer, BUFSIZE);
 
         if (bytes_read <= 0) {
-          perror("recv");
+          perror("read");
           close(client_states[i].fd);
           client_states[i].fd = -1;
-          client_states[i].state = STATE_IDLE;
+          client_states[i].state = STATE_DISCONNECTED;
           printf("Client disconnected or could not read from the socket\n");
         } else {
-          printf("Received %ld bytes from client %s\n", bytes_read,
-                 inet_ntoa(client_addr.sin_addr));
+          printf("Received %ld bytes from client %s: %s\n", bytes_read,
+                 inet_ntoa(client_addr.sin_addr), client_states[i].buffer);
         }
       }
     }
