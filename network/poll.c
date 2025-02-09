@@ -46,7 +46,7 @@ int find_free_slot() {
 // can we use a map? hello c ?
 int find_slot_by_fd(int fd) {
   for (int i = 0; i < MAX_CLIENTS; i++) {
-    if (fd == client_states[i].fd == client_states[i].fd) {
+    if (fd == client_states[i].fd) {
       return i;
     }
   }
@@ -103,15 +103,14 @@ int main() {
 
   while (1) {
 
-    int ii = 0;
+    int ii = 1;
     for (int i = 0; i < MAX_CLIENTS; i++) {
-      if (client_states[i].fd == -1) {
-        continue;
-      }
+      if (client_states[i].fd != -1) {
 
-      fds[ii].fd = client_states[i].fd;
-      fds[ii].events = POLLIN;
-      ii++;
+        fds[ii].fd = client_states[i].fd;
+        fds[ii].events = POLLIN;
+        ii++;
+      }
     }
 
     int n_events = poll(fds, nfds, -1);
@@ -146,6 +145,7 @@ int main() {
     }
 
     for (int i = 1; i <= nfds && n_events > 0; i++) {
+
       if (fds[i].revents & POLLIN) {
         n_events--;
 
