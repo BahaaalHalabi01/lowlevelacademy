@@ -2,6 +2,10 @@
 #define PROTO_H
 
 
+#ifndef LISTEN_CONN
+#define LISTEN_CONN 10
+#endif
+
 #ifndef MAX_CLIENTS
 #define MAX_CLIENTS 128
 #endif
